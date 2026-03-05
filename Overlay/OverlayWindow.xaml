@@ -1,0 +1,63 @@
+<Window x:Class="LeMansUltimateCoPilot.Overlay.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:overlay="clr-namespace:LeMansUltimateCoPilot.Overlay"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        WindowState="Maximized"
+        ShowInTaskbar="False"
+        Title="ApexFollower">
+
+    <Grid x:Name="RootGrid">
+
+        <!-- Delta Distance - top center -->
+        <overlay:DeltaDistance x:Name="DeltaControl"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Margin="0,40,0,0"/>
+
+        <!-- Brake Bar - left side -->
+        <overlay:PedalBar x:Name="BrakeBar"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Bottom"
+            Margin="60,0,0,120"
+            Label="BRAKE"/>
+
+        <!-- Throttle Bar - right side -->
+        <overlay:PedalBar x:Name="ThrottleBar"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Margin="0,0,60,120"
+            Label="THROTTLE"/>
+
+        <!-- Target Gear - center -->
+        <overlay:TargetGear x:Name="GearControl"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Margin="0,0,0,180"/>
+
+        <!-- Ghost Steering - center bottom -->
+        <overlay:GhostSteering x:Name="SteeringControl"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Margin="0,0,0,20"/>
+
+        <!-- Connection status (shown only when disconnected) -->
+        <Border x:Name="StatusBar"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Margin="0,12,0,0"
+            Padding="14,5"
+            CornerRadius="8"
+            Background="#BB000000"
+            Visibility="Visible">
+            <TextBlock x:Name="StatusText"
+                Text="Waiting for LMU..."
+                FontFamily="Segoe UI" FontSize="13"
+                Foreground="#AAFFFFFF"/>
+        </Border>
+
+    </Grid>
+</Window>

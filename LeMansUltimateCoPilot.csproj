@@ -1,27 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Platforms>x64</Platforms>
+    <RootNamespace>LeMansUltimateCoPilot</RootNamespace>
+    <AssemblyName>ApexFollower</AssemblyName>
+    <ApplicationIcon />
+    <StartupObject />
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="LeMansUltimateCoPilot.Tests\**" />
-    <Compile Remove="StandaloneAnalyzer.cs" />
-    <Compile Remove="MemoryAnalyzer.cs" />
-    <Compile Remove="MemoryAnalyzerApp.cs" />
-    <Compile Remove="TestStructure.cs" />
     <EmbeddedResource Remove="LeMansUltimateCoPilot.Tests\**" />
     <None Remove="LeMansUltimateCoPilot.Tests\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.SemanticKernel" Version="1.15.1" />
-    <PackageReference Include="System.Speech" Version="8.0.0" />
   </ItemGroup>
 
 </Project>

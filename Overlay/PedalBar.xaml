@@ -1,0 +1,77 @@
+<UserControl x:Class="LeMansUltimateCoPilot.Overlay.PedalBar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Width="36" Height="220">
+
+    <Grid>
+        <!-- Glass background -->
+        <Border CornerRadius="8"
+                Background="#33000000"
+                BorderBrush="#55FFFFFF"
+                BorderThickness="1">
+            <Border.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="0" Opacity="0.4"/>
+            </Border.Effect>
+        </Border>
+
+        <!-- Bar area -->
+        <Grid Margin="6,8,6,24">
+            <!-- Track (empty bar background) -->
+            <Border CornerRadius="4" Background="#22FFFFFF"/>
+
+            <!-- My input bar (filled, bottom-up via ScaleTransform origin bottom) -->
+            <Border x:Name="MyBar"
+                    CornerRadius="4"
+                    VerticalAlignment="Bottom"
+                    Height="0">
+                <Border.RenderTransformOrigin>0.5,1</Border.RenderTransformOrigin>
+                <Border.Background>
+                    <SolidColorBrush x:Name="MyBarBrush" Color="#FF00E676"/>
+                </Border.Background>
+            </Border>
+
+            <!-- Reference line marker (horizontal line at reference value height) -->
+            <Border x:Name="RefMarker"
+                    Height="2"
+                    Margin="2,0"
+                    VerticalAlignment="Bottom"
+                    Background="#DDFFFFFF"
+                    CornerRadius="1">
+                <Border.Effect>
+                    <DropShadowEffect Color="White" BlurRadius="4" ShadowDepth="0" Opacity="0.8"/>
+                </Border.Effect>
+            </Border>
+        </Grid>
+
+        <!-- Label -->
+        <TextBlock x:Name="LabelText"
+                   Text="BRAKE"
+                   FontFamily="Segoe UI"
+                   FontSize="8"
+                   FontWeight="Bold"
+                   Foreground="#AAFFFFFF"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Bottom"
+                   Margin="0,0,0,6"
+                   LetterSpacing="1">
+            <TextBlock.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="4" ShadowDepth="0" Opacity="0.9"/>
+            </TextBlock.Effect>
+        </TextBlock>
+
+        <!-- Value label -->
+        <TextBlock x:Name="ValueText"
+                   Text="0%"
+                   FontFamily="Segoe UI"
+                   FontSize="8"
+                   FontWeight="SemiBold"
+                   Foreground="#CCFFFFFF"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Top"
+                   Margin="0,4,0,0">
+            <TextBlock.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="3" ShadowDepth="0" Opacity="0.9"/>
+            </TextBlock.Effect>
+        </TextBlock>
+    </Grid>
+</UserControl>
