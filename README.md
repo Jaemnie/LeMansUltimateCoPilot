@@ -1,275 +1,183 @@
-# Le Mans Ultimate Shared Memory Reader - AI Driving Coach
+# Apex Follower
 
-A C# console application that reads real-time telemetry data from Le Mans Ultimate (rFactor2) using Windows shared memory and provides enhanced telemetry logging for AI-assisted driving analysis.
+Le Mans Ultimate(rFactor2) 전용 **실시간 드라이빙 가이드 오버레이**.  
+고수의 주행 데이터(레퍼런스 랩)를 기반으로, 게임 위에 투명하게 떠서 브레이크·스로틀·스티어링·기어를 실시간으로 안내합니다.
 
-## Current Status: Phase 1.3 - Track Mapping & Segmentation ✅
+## 핵심 기능 (4가지)
 
-**COMPLETED**: Phase 1.1 - Enhanced telemetry logging system is fully implemented and tested (50/50 tests passing).  
-**COMPLETED**: Phase 1.2 - Reference lap recording and management system (103/103 tests passing).  
-**COMPLETED**: Phase 1.3 - Track mapping and segmentation system (150/150 tests passing).
+| 기능 | 설명 |
+|------|------|
+| **Ghost Pedals** | 고수의 브레이크/스로틀 위에 내 실시간 입력을 채워진 막대로 겹쳐 표시 |
+| **Target Gear & RPM** | 레퍼런스 기어와 다를 때 화면 중앙에 변속 알림 + 펄스 애니메이션 |
+| **Ghost Steering** | 화면 하단 중앙에 레퍼런스(점선 호)와 내 조향(실선 호)을 겹쳐 표시 |
+| **Delta Distance** | 같은 LapDistance에서 레퍼런스 대비 시간차를 화면 상단에 표시 |
 
-### Phase 1.1 Features ✅
-- **Enhanced Telemetry Data Model**: 60+ comprehensive telemetry fields including position, velocity, acceleration, tire data, suspension, aerodynamics, and more
-- **Robust CSV Logging**: Session-based logging with proper headers, metadata, and statistics
-- **Data Validation**: Input validation and error handling for telemetry data
-- **Session Management**: Start/stop logging sessions with automatic file management
-- **Statistics Tracking**: Session duration, record counts, and performance metrics
-- **Comprehensive Testing**: 50+ unit tests covering all functionality
+### 색상 체계 (3색 Delta 시스템)
 
-### Phase 1.2 Features ✅
-- **Reference Lap Detection**: ✅ Real-time lap detection with start/finish line crossing
-- **Lap Data Storage**: ✅ JSON-based storage with error handling and validation
-- **Lap Quality Validation**: ✅ Comprehensive validation for lap data quality
-- **Sector Analysis**: ✅ Automatic sector time calculation and analysis
-- **Lap Management**: ✅ Save, load, delete, and organize reference laps
-- **Performance Metrics**: ✅ Automatic calculation of lap performance statistics
+- **Green** — 레퍼런스와 일치 (차이 5% 미만)
+- **Blue** — 입력이 레퍼런스보다 부족 (더 밟거나 꺾어야 함)
+- **Red** — 입력이 레퍼런스를 초과 (오버스티어 / 휠락 위험)
 
-### Phase 1.3 Features ✅
-- **Track Segmentation**: ✅ Automatic division of tracks into micro-sectors (configurable length)
-- **Corner Detection**: ✅ AI-powered identification of corner types, straights, and braking zones
-- **Track Configuration**: ✅ Complete track mapping with segment characteristics and metadata
-- **Speed Profile Analysis**: ✅ Optimal speed calculation for each track segment
-- **Coaching Data**: ✅ Difficulty ratings, importance scores, and coaching notes per segment
-- **File Management**: ✅ JSON-based track configuration storage and retrieval
+모든 컴포넌트(Ghost Pedals, Ghost Steering, Target Gear)에 동일하게 적용됩니다.
 
-### Technical Implementation Status
-**Phase 1.1 Complete** ✅ (50/50 tests passing)
-- `EnhancedTelemetryData` class with 60+ telemetry fields
-- `TelemetryLogger` service for CSV logging and session management
-- `SessionStatistics` for tracking session metrics
-- Proper error handling and data validation
-- Thread-safe operations and file management
+---
 
-**Phase 1.2 Complete** ✅ (103/103 tests passing)
-- ✅ `ReferenceLap` data model for storing lap information with JSON serialization
-- ✅ `LapDetector` service for real-time lap detection and validation
-- ✅ `ReferenceLapManager` for managing lap storage, retrieval, and organization
-- ✅ Comprehensive error handling and edge case coverage
-- ✅ Culture-independent formatting and robust data validation
+## 동작 원리
 
-**Phase 1.3 Complete** ✅ (150/150 tests passing)
-- ✅ `TrackSegment` model for individual track micro-sectors with detailed characteristics
-- ✅ `TrackConfiguration` model for complete track layouts and metadata
-- ✅ `TrackMapper` service for automatic track segmentation and analysis
-- ✅ `TrackConfigurationManager` for track configuration file management
-- ✅ Corner detection algorithms and speed profile calculation
-- ✅ Comprehensive coaching data generation and segment classification
+```
+LMU 게임
+  └─ Shared Memory ($rFactor2SMMP_Telemetry$, $rFactor2SMMP_Scoring$)
+       └─ SharedMemoryReader (백그라운드 100Hz 폴링)
+            └─ TelemetrySnapshot (경량 9필드 구조체)
+                 ├─ LapDetector → 랩 완료 시 레퍼런스 자동 저장
+                 ├─ ReferenceLapStore → %APPDATA%/ApexFollower/ReferenceLaps/*.json
+                 └─ DistanceMatchEngine (이진 탐색 + 선형 보간)
+                      └─ OverlayWindow (투명·클릭투과 WPF 창, vsync 렌더링)
+                           ├─ PedalBar (Brake / Throttle)
+                           ├─ TargetGear
+                           ├─ GhostSteering
+                           └─ DeltaDistance
+```
 
-## Features
+### 선형 보간 공식
 
-- **Real-time telemetry display** - Shows live comprehensive data from the game
-- **Enhanced telemetry logging** - CSV export with detailed data for analysis
-- **AI driving coach foundation** - Data structure designed for performance analysis
-- **Session management** - Start/stop logging with automatic file naming
-- **Comprehensive data capture**:
-  - Engine data (RPM, gear, speed, throttle, brake, steering)
-  - G-forces (longitudinal, lateral, vertical)
-  - Temperatures (water, oil, tire temps for all four wheels)
-  - Tire data (pressure, temperature, grip, load for all four wheels)
-  - Suspension data (deflection, velocity for all four wheels)
-  - Position and motion data (3D coordinates, velocity, acceleration)
-  - Vehicle setup data (downforce, ride height, fuel level)
-  - Driver inputs (both filtered and raw values)
+레퍼런스 데이터 포인트 사이를 매끄럽게 보간합니다:
 
-## New Enhanced Features
+```
+V = V1 + (V2 - V1) * (Pos_current - Pos1) / (Pos2 - Pos1)
+```
 
-### **Telemetry Logging**
-- **Automatic CSV logging** with comprehensive data fields
-- **Session metadata** tracking (track, vehicle, duration, record count)
-- **Data validation** to ensure quality telemetry data
-- **Real-time logging status** display
-- **High-precision timestamps** for accurate data analysis
+---
 
-### **Controls**
-- **'l'** - Start/Stop telemetry logging
-- **'s'** - Show session statistics and log files
-- **'q'** - Quit application  
-- **'r'** - Reconnect to shared memory
-- **Ctrl+C** - Force quit
-
-### **Data Export Format**
-CSV files include 60+ telemetry fields with metadata:
-- Position and motion vectors
-- All driver inputs (filtered and unfiltered)
-- Complete tire data (4 wheels × temperature, pressure, load, grip)
-- Suspension data (4 wheels × deflection, velocity)
-- G-force calculations
-- Engine and vehicle dynamics
-- Session and lap information
-
-## Prerequisites
-
-- **Windows operating system** (shared memory is Windows-specific)
-- **.NET 10.0 or later** installed
-- **Le Mans Ultimate** running with an active driving session
-- **rFactor2SharedMemoryPlugin** loaded (comes with Le Mans Ultimate)
-
-## How to Use
-
-### **Basic Operation**
-1. **Start Le Mans Ultimate** and begin a driving session (practice, race, etc.)
-2. **Run this application**: `dotnet run`
-3. **The app will automatically connect** to the game's shared memory
-4. **Real-time telemetry data** will be displayed in the console
-
-### **Telemetry Logging for AI Analysis**
-1. **Press 'l'** to start logging telemetry data
-2. **Drive your session** - all data is automatically captured
-3. **Press 'l' again** to stop logging
-4. **Press 's'** to view session statistics and available log files
-5. **Log files are saved** in `Documents\LMU_Telemetry_Logs\`
-
-### **CSV Data Analysis**
-- **Import CSV files** into Excel, Python, or data analysis tools
-- **60+ data fields** per record for comprehensive analysis
-- **10Hz sampling rate** (10 records per second)
-- **Session metadata** included in file headers
-- **Ready for AI/ML analysis** and driving coach development
-
-## File Structure
+## 프로젝트 구조
 
 ```
 LeMansUltimateCoPilot/
-├── Program.cs                 # Main application
-├── Models/
-│   ├── EnhancedTelemetryData.cs   # Comprehensive telemetry data model
-│   ├── ReferenceLap.cs            # Reference lap data structure
-│   ├── TrackSegment.cs            # Individual track micro-sector model
-│   └── TrackConfiguration.cs      # Complete track layout and metadata
+├── SharedMemory/
+│     ├── Rf2Structs.cs            rF2 공식 메모리 구조체
+│     ├── SharedMemoryReader.cs    100Hz 폴링, 트랙/차량 변경 감지
+│     └── TelemetrySnapshot.cs    경량 9-필드 readonly struct
+├── Data/
+│     ├── ReferenceLapStore.cs     JSON 저장/로드 (%APPDATA%/ApexFollower/)
+│     └── DistanceMatchEngine.cs  O(log n) 이진 탐색 + 선형 보간
 ├── Services/
-│   ├── TelemetryLogger.cs         # Logging service with session management
-│   ├── LapDetector.cs             # Real-time lap detection and validation
-│   ├── ReferenceLapManager.cs     # Reference lap storage and management
-│   ├── TrackMapper.cs             # Automatic track segmentation service
-│   └── TrackConfigurationManager.cs # Track configuration file management
-└── README.md
+│     └── LapDetector.cs          랩 완료 감지 및 이벤트 발생
+├── Overlay/
+│     ├── OverlayWindow.xaml/.cs  투명 클릭투과 메인 윈도우
+│     ├── PedalBar.xaml/.cs       브레이크 / 스로틀 Progressive Bar
+│     ├── TargetGear.xaml/.cs     기어 표시 + ScaleTransform 애니메이션
+│     ├── GhostSteering.xaml/.cs  Path + ArcSegment 스티어링 가이드
+│     └── DeltaDistance.xaml/.cs  타임 델타 표시
+├── App.xaml/.cs                  WPF 진입점, 자동 레퍼런스 로딩
+└── LeMansUltimateCoPilot.csproj
 ```
 
-## Building and Running
+---
 
-### With .NET SDK installed:
-```bash
-dotnet build
+## 요구 사항
+
+- **Windows 10/11** (Shared Memory는 Windows 전용)
+- **.NET 10.0** 이상 (Windows 대상 빌드)
+- **Le Mans Ultimate** 실행 중 (활성 드라이빙 세션)
+- **rFactor2SharedMemoryPlugin** 로드됨 (LMU 기본 포함)
+
+---
+
+## 빌드 및 실행
+
+```powershell
+# 빌드
+dotnet build -c Release
+
+# 실행
 dotnet run
+# 또는 bin/Release/net10.0-windows/ApexFollower.exe 직접 실행
 ```
 
-### With Visual Studio:
-1. Open the `.csproj` file in Visual Studio
-2. Build and run the project (F5)
+Visual Studio에서는 솔루션 파일(`LeMansUltimateCoPilot.sln`)을 열고 F5로 실행합니다.
 
-## Log File Format
+---
 
-### **Header Information**
-```csv
-# Telemetry Session Started: 2025-07-06 15:30:00
-# Session Name: Silverstone_McLaren720S
-# Log Format Version: 1.0
-# Track: Silverstone International Circuit
-# Vehicle: McLaren 720S GT3
+## 사용법
+
+1. **Le Mans Ultimate를 실행**하고 드라이빙 세션에 진입합니다.
+2. **ApexFollower를 실행**합니다. 오버레이가 게임 위에 자동으로 고정됩니다.
+3. **첫 랩을 주행**합니다. 랩이 완료되면 자동으로 레퍼런스 랩이 저장됩니다.
+4. **이후 랩부터** 오버레이가 활성화되어 레퍼런스와 비교 가이드를 제공합니다.
+5. 더 빠른 랩을 완료하면 **자동으로 베스트 랩으로 갱신**됩니다.
+
+### 레퍼런스 랩 저장 위치
+
+```
+%APPDATA%\ApexFollower\ReferenceLaps\
+  {TrackName}_{VehicleName}_{LapTime}s.json
 ```
 
-### **Data Fields** (60+ columns including):
-- **Timestamps**: Precise timing for each data point
-- **Position/Motion**: 3D coordinates, velocity, acceleration
-- **Driver Inputs**: Throttle, brake, steering, clutch (filtered + raw)
-- **Vehicle Dynamics**: Speed, RPM, gear, G-forces
-- **Tire Data**: Temperature, pressure, load, grip (all 4 wheels)
-- **Suspension**: Deflection, velocity (all 4 wheels)
-- **Temperatures**: Engine water, oil, tire temps
-- **Setup Data**: Downforce, ride height, fuel level
+트랙/차량이 바뀌면 해당 트랙의 베스트 레퍼런스가 자동으로 불러와집니다.
 
-## AI Driving Coach Development
+---
 
-This enhanced telemetry logging provides the foundation for AI driving coach development:
+## 오버레이 HUD 레이아웃
 
-### **Phase 1 Complete: Enhanced Telemetry Logging** ✅
-- Comprehensive data capture (60+ fields)
-- Real-time logging with session management
-- CSV export for analysis tools
-- Data validation and quality checks
+```
+ ┌────────────────────────────────────────────┐
+ │           ┌─────────────┐                  │
+ │           │  -0.342s    │  ← Delta         │
+ │           └─────────────┘                  │
+ │                                            │
+ │ ▌BRAKE▐          ▌3▐         ▌THROTTLE▐   │
+ │ ▌█████▐          ▌ ▐         ▌█████████▐  │
+ │ ▌██▁▁▁▐  (gear)  ▌ ▐         ▌▁▁▁██████▐  │
+ │ ▌▁▁▁▁▁▐          ▌ ▐         ▌▁▁▁▁▁▁▁▁▁▐  │
+ │                                            │
+ │           ╭───── ◎ ─────╮                  │
+ │           ╰─────────────╯  ← Steering      │
+ └────────────────────────────────────────────┘
 
-### **Next Phases** (Future Development):
-- **Phase 2.1: Real-time comparison system** - Compare live telemetry vs reference laps
-- **Phase 2.2: Driving pattern recognition** - Detect mistakes and optimization opportunities  
-- **Phase 3.1: AI coaching logic engine** - Rule-based coaching system with contextual advice
-- **Phase 4.1: Real-time display system** - Visual dashboard and coaching interface
-
-## Troubleshooting
-
-### "Waiting for Le Mans Ultimate..." message
-- Make sure Le Mans Ultimate is running
-- Ensure you're in an active driving session (not just main menu)
-- The shared memory plugin only creates data during active gameplay
-
-### "Error accessing shared memory"
-- Run the application as Administrator
-- Verify that the rFactor2SharedMemoryPlugin is loaded (check Process Explorer)
-- Make sure no antivirus is blocking shared memory access
-
-### Logging Issues
-- Check that you have write permissions to `Documents\LMU_Telemetry_Logs\`
-- Ensure sufficient disk space for telemetry data
-- Large sessions can generate 50-100MB+ log files
-
-## Technical Details
-
-- **Uses `System.IO.MemoryMappedFiles`** for Windows shared memory access
-- **Reads binary data structures** using P/Invoke marshalling
-- **Connects to shared memory objects** named `$rFactor2SMMP_*$`
-- **Updates at 10Hz** (10 times per second) for smooth data capture
-- **Thread-safe logging** with proper cleanup and error handling
-- **Comprehensive data model** designed for AI analysis
-
-## License
-
-This project is for educational and personal use. Le Mans Ultimate and rFactor2 are trademarks of their respective owners.
-
-- **'q'** - Quit the application
-- **'r'** - Reconnect to shared memory
-- **Ctrl+C** - Force quit
-
-## Building and Running
-
-### With .NET SDK installed:
-```bash
-dotnet build
-dotnet run
+  채워진 막대 = 내 실시간 입력
+  수평선 마커 = 레퍼런스(고수) 기준값
+  색상        = Green(일치) / Blue(부족) / Red(초과)
 ```
 
-### With Visual Studio:
-1. Open the `.csproj` file in Visual Studio
-2. Build and run the project (F5)
+---
 
-## Troubleshooting
+## 안티치트 안전성
 
-### "Waiting for Le Mans Ultimate..." message
-- Make sure Le Mans Ultimate is running
-- Ensure you're in an active driving session (not just main menu)
-- The shared memory plugin only creates data during active gameplay
+모든 데이터 읽기는 **rFactor2 공식 Shared Memory API**를 통한 External 방식입니다.  
+게임 프로세스에 대한 Injection/Hooking을 일절 사용하지 않으므로 온라인 레이스에서도 안전합니다.
 
-### "Error accessing shared memory"
-- Run the application as Administrator
-- Verify that the rFactor2SharedMemoryPlugin is loaded (check Process Explorer)
-- Make sure no antivirus is blocking shared memory access
+---
 
-## Technical Details
+## 기술 스택
 
-- **Uses `System.IO.MemoryMappedFiles`** for Windows shared memory access
-- **Reads binary data structures** using P/Invoke marshalling
-- **Connects to shared memory objects** named `$rFactor2SMMP_*$`
-- **Updates at 10Hz** (10 times per second) for smooth data display
-- **Thread-safe** with proper cleanup and error handling
+| 항목 | 내용 |
+|------|------|
+| 프레임워크 | .NET 10.0 WPF (Windows) |
+| 공유 메모리 | `System.IO.MemoryMappedFiles` |
+| Win32 인터롭 | `User32.dll` SetWindowLong (클릭 투과) |
+| 렌더링 | `CompositionTarget.Rendering` (vsync 동기화) |
+| 데이터 폴링 | 100Hz (10ms 주기, 백그라운드 스레드) |
+| 직렬화 | `System.Text.Json` |
+| 외부 NuGet | 없음 |
 
-## Data Structure
+---
 
-The application reads from rFactor2's telemetry shared memory segment, which includes:
-- Vehicle telemetry (position, velocity, acceleration)
-- Engine data (RPM, temperatures, fuel)
-- Input data (throttle, brake, steering, clutch)
-- Tire data (temperature, pressure, grip, load)
-- Suspension data (deflection, velocity)
-- Session information (lap times, track name)
+## 문제 해결
 
-## License
+### "Waiting for LMU..." 메시지가 계속 표시될 때
+- Le Mans Ultimate가 실행 중이고 드라이빙 세션에 진입했는지 확인합니다.
+- 메인 메뉴 상태에서는 Shared Memory가 생성되지 않습니다.
 
-This project is for educational and personal use. Le Mans Ultimate and rFactor2 are trademarks of their respective owners.
+### 오버레이가 게임 위에 표시되지 않을 때
+- 게임이 **전체 창(Borderless Windowed)** 모드인지 확인합니다.
+- 전체 화면(Exclusive Fullscreen) 모드에서는 오버레이가 가려질 수 있습니다.
+
+### 공유 메모리 접근 오류
+- 관리자 권한으로 실행해 보세요.
+- 안티바이러스가 Shared Memory 접근을 차단하지 않는지 확인합니다.
+
+---
+
+## 라이선스
+
+개인 학습 및 비상업적 사용 목적. Le Mans Ultimate 및 rFactor2는 각 소유권자의 상표입니다.
