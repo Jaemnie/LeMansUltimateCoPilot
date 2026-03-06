@@ -155,16 +155,6 @@ namespace LeMansUltimateCoPilot.SharedMemory
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
-    public struct rF2Telemetry
-    {
-        public uint mVersionUpdateBegin;
-        public uint mVersionUpdateEnd;
-        public int mBytesUpdatedHint;
-        public int mNumVehicles;
-        public rF2VehicleTelemetry mVehicles;
-    }
-
-    [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct rF2ScoringInfo
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 64)]

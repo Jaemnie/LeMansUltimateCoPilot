@@ -37,9 +37,8 @@ namespace LeMansUltimateCoPilot.Overlay
         /// </summary>
         /// <param name="myGear">Current gear (-1=R, 0=N, 1+=forward)</param>
         /// <param name="refGear">Reference gear at same lap distance</param>
-        /// <param name="engine">DistanceMatchEngine for look-ahead</param>
-        /// <param name="lapDist">Current lap distance for look-ahead</param>
-        public void Update(int myGear, int refGear, DistanceMatchEngine engine, double lapDist)
+        /// <param name="engine">DistanceMatchEngine for HasReference check</param>
+        public void Update(int myGear, int refGear, DistanceMatchEngine engine)
         {
             // Display gear as "R", "N", or digit
             GearText.Text = GearLabel(myGear);

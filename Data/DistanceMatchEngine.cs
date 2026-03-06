@@ -15,7 +15,6 @@ namespace LeMansUltimateCoPilot.Data
         private bool _hasData;
 
         public bool HasReference => _hasData;
-        public double TrackLength => _hasData && _distances.Length > 0 ? _distances[^1] : 0;
 
         /// <summary>Load a sorted reference dataset. Must be called before any queries.</summary>
         public void LoadReference(List<TelemetrySnapshot> referenceData)
@@ -40,16 +39,6 @@ namespace LeMansUltimateCoPilot.Data
             }
 
             _hasData = true;
-        }
-
-        /// <summary>
-        /// Find the nearest reference point using binary search. O(log n).
-        /// </summary>
-        public TelemetrySnapshot FindNearest(double lapDistance)
-        {
-            if (!_hasData) return TelemetrySnapshot.Empty;
-            var idx = BinarySearch(lapDistance);
-            return _snapshots[idx];
         }
 
         /// <summary>
@@ -90,18 +79,6 @@ namespace LeMansUltimateCoPilot.Data
                 TrackName = s1.TrackName,
                 VehicleName = s1.VehicleName
             };
-        }
-
-        /// <summary>
-        /// Returns the interpolated reference snapshot at current position + offsetMeters ahead.
-        /// Used for look-ahead predictions (gear changes, brake points).
-        /// </summary>
-        public TelemetrySnapshot? LookAhead(double lapDistance, double offsetMeters)
-        {
-            if (!_hasData) return null;
-            var targetDist = lapDistance + offsetMeters;
-            if (targetDist > TrackLength) targetDist -= TrackLength; // wrap around
-            return Interpolate(targetDist);
         }
 
         // Returns the index of the largest _distances[i] <= lapDistance (lower bound).

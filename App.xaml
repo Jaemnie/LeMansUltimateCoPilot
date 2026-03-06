@@ -1,32 +1,5 @@
 <Application x:Class="LeMansUltimateCoPilot.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Application.Resources>
-        <!-- Glassmorphism color palette -->
-        <Color x:Key="ColorGreen">#FF00E676</Color>
-        <Color x:Key="ColorBlue">#FF40C4FF</Color>
-        <Color x:Key="ColorRed">#FFFF5252</Color>
-        <Color x:Key="ColorWhite">#CCFFFFFF</Color>
-        <Color x:Key="ColorGlass">#33000000</Color>
-        <Color x:Key="ColorGlassBorder">#55FFFFFF</Color>
-
-        <SolidColorBrush x:Key="BrushGreen" Color="{StaticResource ColorGreen}"/>
-        <SolidColorBrush x:Key="BrushBlue" Color="{StaticResource ColorBlue}"/>
-        <SolidColorBrush x:Key="BrushRed" Color="{StaticResource ColorRed}"/>
-        <SolidColorBrush x:Key="BrushWhite" Color="{StaticResource ColorWhite}"/>
-        <SolidColorBrush x:Key="BrushGlass" Color="{StaticResource ColorGlass}"/>
-        <SolidColorBrush x:Key="BrushGlassBorder" Color="{StaticResource ColorGlassBorder}"/>
-
-        <!-- HUD text style -->
-        <Style x:Key="HudText" TargetType="TextBlock">
-            <Setter Property="FontFamily" Value="Segoe UI"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Foreground" Value="{StaticResource BrushWhite}"/>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="Black" BlurRadius="6" ShadowDepth="1" Opacity="0.8"/>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </Application.Resources>
+    <Application.Resources/>
 </Application>

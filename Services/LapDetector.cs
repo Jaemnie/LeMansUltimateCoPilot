@@ -17,10 +17,6 @@ namespace LeMansUltimateCoPilot.Services
         private bool _lapInProgress = false;
 
         public event EventHandler<LapCompletedEventArgs>? LapCompleted;
-        public event EventHandler<LapStartedEventArgs>? LapStarted;
-
-        public bool IsLapInProgress => _lapInProgress;
-        public int CurrentLapDataPoints => _currentLapData.Count;
 
         public void Process(TelemetrySnapshot snap)
         {
@@ -66,7 +62,6 @@ namespace LeMansUltimateCoPilot.Services
             _currentLapData.Add(snap);
             _lapInProgress = true;
             _lapStartLapTime = snap.LapTime;
-            LapStarted?.Invoke(this, new LapStartedEventArgs(snap.LapNumber, snap.TrackName, snap.VehicleName));
         }
 
         private void FinishLap(TelemetrySnapshot snap)
@@ -84,13 +79,6 @@ namespace LeMansUltimateCoPilot.Services
             _lapInProgress = false;
         }
 
-        public void Reset()
-        {
-            _currentLapData.Clear();
-            _prevLapNumber = -1;
-            _prevLapDistance = -1;
-            _lapInProgress = false;
-        }
     }
 
     public class LapCompletedEventArgs : EventArgs
@@ -112,17 +100,4 @@ namespace LeMansUltimateCoPilot.Services
         }
     }
 
-    public class LapStartedEventArgs : EventArgs
-    {
-        public int LapNumber { get; }
-        public string TrackName { get; }
-        public string VehicleName { get; }
-
-        public LapStartedEventArgs(int lapNumber, string trackName, string vehicleName)
-        {
-            LapNumber = lapNumber;
-            TrackName = trackName;
-            VehicleName = vehicleName;
-        }
-    }
 }

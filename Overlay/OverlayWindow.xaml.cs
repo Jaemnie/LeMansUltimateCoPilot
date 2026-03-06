@@ -86,7 +86,7 @@ namespace LeMansUltimateCoPilot.Overlay
             // Update all HUD components
             BrakeBar.Update(snap.Brake, reference.Brake, isPedalBrake: true);
             ThrottleBar.Update(snap.Throttle, reference.Throttle, isPedalBrake: false);
-            GearControl.Update(snap.Gear, reference.Gear, _matchEngine, snap.LapDistance);
+            GearControl.Update(snap.Gear, reference.Gear, _matchEngine);
             SteeringControl.Update(snap.Steering, reference.Steering);
             DeltaControl.Update(snap.LapTime, reference.LapTime, _matchEngine.HasReference);
         }

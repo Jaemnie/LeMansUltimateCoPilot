@@ -27,7 +27,7 @@ namespace LeMansUltimateCoPilot
             {
                 var best = _store.LoadBest(track, vehicle);
                 if (best != null)
-                    _matchEngine.LoadReference(best.Data);
+                    _matchEngine.LoadReference(best.ToSnapshots());
             };
 
             // Auto-save best lap on lap completion
@@ -38,7 +38,7 @@ namespace LeMansUltimateCoPilot
                 // Reload reference if this was a new best
                 var best = _store.LoadBest(args.TrackName, args.VehicleName);
                 if (best != null)
-                    _matchEngine.LoadReference(best.Data);
+                    _matchEngine.LoadReference(best.ToSnapshots());
             };
 
             _reader.Start();
@@ -49,7 +49,7 @@ namespace LeMansUltimateCoPilot
 
         protected override void OnExit(ExitEventArgs e)
         {
-            _reader?.Stop();
+            _reader?.Dispose();
             base.OnExit(e);
         }
     }
